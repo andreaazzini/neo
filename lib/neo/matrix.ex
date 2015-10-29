@@ -8,19 +8,7 @@ defmodule Neo.Matrix do
     :error
   end
   def delete(%__MODULE__{map: map} = matrix, {row, col}) do
-    cols =
-      case Map.fetch(map, row) do
-        {:ok, cols} ->
-          Enum.into(cols, %{})
-          |> Map.delete(col)
-          |> Enum.into([])
-        :error -> []
-      end
-    if cols == [] do
-      {:ok, %{matrix | map: Map.delete(map, row)}}
-    else
-      {:ok, %{matrix | map: Map.put(map, row, cols)}}
-    end
+    %{matrix | map: Map.delete(map, {row, col})}
   end
 
   def fetch(%__MODULE__{rows: rows, cols: cols}, {row, col})
@@ -28,12 +16,7 @@ defmodule Neo.Matrix do
     :error
   end
   def fetch(%__MODULE__{map: map}, {row, col}) do
-    case Map.fetch(map, row) do
-      {:ok, cols} ->
-        Enum.into(cols, %{})
-        |> Map.fetch(col)
-      :error -> :error
-    end
+    Map.fetch(map, {row, col})
   end
 
   def new() do
@@ -49,8 +32,7 @@ defmodule Neo.Matrix do
     :error
   end
   def put(%__MODULE__{map: map} = matrix, {row, col}, val) do
-    cols = [{col, val} | get_row(matrix, row)]
-    {:ok, %{matrix | map: Map.put(map, row, cols)}}
+    %{matrix | map: Map.put(map, {row, col}, val)}
   end
 
   def reduce(%__MODULE__{map: map}, acc, fun) do
@@ -59,12 +41,5 @@ defmodule Neo.Matrix do
 
   def size(%__MODULE__{rows: rows, cols: cols}) do
     {rows, cols}
-  end
-
-  defp get_row(%__MODULE__{map: map}, row) do
-    case Map.fetch(map, row) do
-      {:ok, cols} when is_list(cols) -> cols
-      :error -> []
-    end
   end
 end
